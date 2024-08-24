@@ -193,15 +193,19 @@ const processOfferCreated = async ({ latestBlockNumber, lastScannedBlock }) => {
         upsert: true,
       }
     );
-    await RequestModel.updateOne(
-      { requestId },
-      {
-        lifecycle: 1,
-      },
-      {
-        upsert: true,
-      }
-    );
+
+    const currentRequest = await RequestModel.findOne({ requestId });
+    if (currentRequest && currentRequest.lifecycle === 0) {
+      await RequestModel.updateOne(
+        { requestId },
+        {
+          lifecycle: 1,
+        },
+        {
+          upsert: true,
+        }
+      );
+    }
   });
 };
 const processRequestAccepted = async ({
