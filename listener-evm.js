@@ -238,10 +238,11 @@ const processOfferAccepted = async ({
   });
   events.forEach(async (event) => {
     const offerId = event.returnValues["offerId"];
+    const isAccepted = event.returnValues["isAccepted"];
     await OfferModel.updateOne(
       { offerId },
       {
-        isAccepted: true,
+        isAccepted,
       },
       {
         upsert: true,
