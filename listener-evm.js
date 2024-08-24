@@ -8,10 +8,23 @@ const OfferModel = require("./models/Offer.model");
 
 require("dotenv").config();
 
-mongoose.connect(process.env.MONGO_URI).then(() => {
-  console.log("Connected to Database");
-});
-mongoose.set("debug", process.env.NODE_ENV != "production");
+function connectWithRetry() {
+  mongoose
+    .connect(process.env.MONGO_URI)
+    .then(() => {
+      console.log("Connected to Database");
+    })
+    .catch((err) => {
+      console.error(
+        "Failed to connect to MongoDB, retrying in 5 seconds...",
+        err
+      );
+      setTimeout(connectWithRetry, 5000);
+    });
+  mongoose.set("debug", process.env.NODE_ENV != "production");
+}
+
+connectWithRetry();
 
 const finderABI = JSON.parse(
   fs.readFileSync(path.join(__dirname, "./finder.abi.json"), "utf8")
@@ -81,7 +94,6 @@ const processRequestCreated = async ({
     toBlock: latestBlockNumber,
   });
 
-
   // Process the events
   events.forEach(async (event) => {
     const address = event.address;
@@ -142,8 +154,6 @@ const processOfferCreated = async ({ latestBlockNumber, lastScannedBlock }) => {
     toBlock: latestBlockNumber,
   });
 
-  
-
   // Process the events
   events.forEach(async (event) => {
     const address = event.address;
@@ -163,7 +173,7 @@ const processOfferCreated = async ({ latestBlockNumber, lastScannedBlock }) => {
     event.timestamp = block.timestamp;
 
     await OfferModel.updateOne(
-      { transactionHash},
+      { transactionHash },
       {
         address,
         transactionHash,
@@ -184,7 +194,7 @@ const processOfferCreated = async ({ latestBlockNumber, lastScannedBlock }) => {
     await RequestModel.updateOne(
       { requestId },
       {
-        lifecycle: 2,
+        lifecycle: 1,
       },
       {
         upsert: true,
@@ -192,7 +202,10 @@ const processOfferCreated = async ({ latestBlockNumber, lastScannedBlock }) => {
     );
   });
 };
-const processRequestAccepted = async ({ latestBlockNumber, lastScannedBlock }) => {
+const processRequestAccepted = async ({
+  latestBlockNumber,
+  lastScannedBlock,
+}) => {
   const events = await MatchEvents.getPastEvents("RequestAccepted", {
     fromBlock: lastScannedBlock + 1,
     toBlock: latestBlockNumber,
@@ -203,7 +216,7 @@ const processRequestAccepted = async ({ latestBlockNumber, lastScannedBlock }) =
     await RequestModel.updateOne(
       { requestId },
       {
-        lifecycle: 1,
+        lifecycle: 2,
         lockedSellerId: sellerId,
       },
       {

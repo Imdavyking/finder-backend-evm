@@ -18,6 +18,8 @@ mongoose.connect(process.env.MONGO_URI, {
   useUnifiedTopology: true,
 });
 
+// fetch seller accepted requests
+
 mongoose.set("debug", process.env.NODE_ENV != "production");
 
 app.get("/requests/:buyerAddress", async (req, res) => {
