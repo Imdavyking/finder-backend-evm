@@ -18,6 +18,7 @@ const Offer = new Schema(
     requestId: Number,
     images: [String],
     sellerId: Number,
+    isAccepted: Boolean,
   },
   {
     timestamps: {

@@ -66,6 +66,7 @@ const getMarketPlaceEvents = async () => {
     await processRequestCreated(option);
     await processOfferCreated(option);
     await processRequestAccepted(option);
+    await processOfferAccepted(option);
 
     lastScannedBlock = lastScannedBlockOffset;
 
@@ -186,6 +187,7 @@ const processOfferCreated = async ({ latestBlockNumber, lastScannedBlock }) => {
         requestId,
         images,
         sellerId,
+        isAccepted: false,
       },
       {
         upsert: true,
@@ -218,6 +220,28 @@ const processRequestAccepted = async ({
       {
         lifecycle: 2,
         lockedSellerId: sellerId,
+      },
+      {
+        upsert: true,
+      }
+    );
+  });
+};
+
+const processOfferAccepted = async ({
+  latestBlockNumber,
+  lastScannedBlock,
+}) => {
+  const events = await MatchEvents.getPastEvents("OfferAccepted", {
+    fromBlock: lastScannedBlock + 1,
+    toBlock: latestBlockNumber,
+  });
+  events.forEach(async (event) => {
+    const offerId = event.returnValues["offerId"];
+    await OfferModel.updateOne(
+      { offerId },
+      {
+        isAccepted: true,
       },
       {
         upsert: true,
