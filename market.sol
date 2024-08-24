@@ -263,7 +263,10 @@ contract Marketplace {
 
         Request storage request = requests[_requestId];
 
-        if (block.timestamp > request.updatedAt + TIME_TO_LOCK) {
+        if (
+            block.timestamp > request.updatedAt + TIME_TO_LOCK &&
+            request.lifecycle == RequestLifecycle.ACCEPTED_BY_BUYER
+        ) {
             revert Marketplace__RequestLocked();
         }
 
@@ -310,7 +313,10 @@ contract Marketplace {
             revert Marketplace__OfferAlreadyAccepted();
         }
 
-        if (block.timestamp > request.updatedAt + TIME_TO_LOCK) {
+        if (
+            block.timestamp > request.updatedAt + TIME_TO_LOCK &&
+            request.lifecycle == RequestLifecycle.ACCEPTED_BY_BUYER
+        ) {
             revert Marketplace__RequestLocked();
         }
 
@@ -352,7 +358,10 @@ contract Marketplace {
             revert Marketplace__OfferNotRemovable();
         }
 
-        if (block.timestamp > request.updatedAt + TIME_TO_LOCK) {
+        if (
+            block.timestamp > request.updatedAt + TIME_TO_LOCK &&
+            request.lifecycle == RequestLifecycle.ACCEPTED_BY_BUYER
+        ) {
             revert Marketplace__RequestLocked();
         }
         uint indexToRemove;
