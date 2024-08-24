@@ -219,11 +219,13 @@ const processRequestAccepted = async ({
   events.forEach(async (event) => {
     const requestId = event.returnValues["requestId"];
     const sellerId = event.returnValues["sellerId"];
+    const updatedAt = event.returnValues["updatedAt"];
     await RequestModel.updateOne(
       { requestId },
       {
         lifecycle: 2,
         lockedSellerId: sellerId,
+        updatedAt,
       },
       {
         upsert: true,
