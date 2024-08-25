@@ -101,6 +101,26 @@ app.post("/requests", async (req, res) => {
   }
 });
 
+app.get("/accepted-requests/:sellerId", async (req, res) => {
+  try {
+    const { sellerId } = req.params;
+
+    const acceptedRequests = await OfferModel.find({
+      sellerId: sellerId,
+    });
+
+    const requestIds = acceptedRequests.map((request) => request.requestId);
+    const requests = await RequestModel.find({
+      requestId: { $in: requestIds },
+    });
+
+    return res.json(requests);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(error.message);
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server is running on port http://localhost:${port}`);
 });

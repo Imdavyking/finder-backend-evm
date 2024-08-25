@@ -173,6 +173,10 @@ const processOfferCreated = async ({ latestBlockNumber, lastScannedBlock }) => {
     const block = await web3.eth.getBlock(event.blockNumber);
     event.timestamp = block.timestamp;
 
+    // 1 => xxxhash [1]-> database -> 0
+    // 2 => xxxtrxhas [1,2] database -> 
+
+
     await OfferModel.updateOne(
       { transactionHash },
       {
