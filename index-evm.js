@@ -101,12 +101,12 @@ app.post("/requests", async (req, res) => {
   }
 });
 
-app.get("/accepted-requests/:sellerId", async (req, res) => {
+app.get("/accepted-requests/:sellerAddress", async (req, res) => {
   try {
-    const { sellerId } = req.params;
+    const { sellerAddress } = req.params;
 
     const acceptedRequests = await OfferModel.find({
-      sellerId: sellerId,
+      sellerAddress: sellerAddress,
     });
 
     const requestIds = acceptedRequests.map((request) => request.requestId);
