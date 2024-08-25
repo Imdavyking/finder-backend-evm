@@ -101,20 +101,22 @@ const processRequestCreated = async ({
     const transactionHash = event.transactionHash;
     const eventName = event.event;
     const signature = event.signature;
-    const requestId = event.returnValues["requestId"];
-    const buyerAddress = event.returnValues["buyerAddress"];
-    const images = event.returnValues["images"];
-    const lifecycle = event.returnValues["lifecycle"];
-    const requestName = event.returnValues["requestName"];
-    const description = event.returnValues["description"];
-    const latitude = event.returnValues["latitude"];
-    const longitude = event.returnValues["longitude"];
-    const buyerId = event.returnValues["buyerId"];
-    const sellerIds = event.returnValues["sellerIds"];
-    const sellersPriceQuote = event.returnValues["sellersPriceQuote"];
-    const lockedSellerId = event.returnValues["lockedSellerId"];
-    const createdAt = event.returnValues["createdAt"];
-    const updatedAt = event.returnValues["updatedAt"];
+    const {
+      requestId,
+      buyerAddress,
+      images,
+      lifecycle,
+      requestName,
+      description,
+      latitude,
+      longitude,
+      buyerId,
+      sellerIds,
+      sellersPriceQuote,
+      lockedSellerId,
+      createdAt,
+      updatedAt,
+    } = event.returnValues;
 
     // get timestamp from block
     const block = await web3.eth.getBlock(event.blockNumber);
@@ -161,14 +163,16 @@ const processOfferCreated = async ({ latestBlockNumber, lastScannedBlock }) => {
     const transactionHash = event.transactionHash;
     const eventName = event.event;
     const signature = event.signature;
-    const offerId = event.returnValues["offerId"];
-    const sellerAddress = event.returnValues["sellerAddress"];
-    const storeName = event.returnValues["storeName"];
-    const price = event.returnValues["price"];
-    const requestId = event.returnValues["requestId"];
-    const images = event.returnValues["images"];
-    const sellerId = event.returnValues["sellerId"];
-    const sellerIds = event.returnValues["sellerIds"];
+    const {
+      offerId,
+      sellerAddress,
+      storeName,
+      price,
+      requestId,
+      images,
+      sellerId,
+      sellerIds,
+    } = event.returnValues;
 
     // get timestamp from block
     const block = await web3.eth.getBlock(event.blockNumber);
@@ -222,9 +226,7 @@ const processRequestAccepted = async ({
     toBlock: latestBlockNumber,
   });
   events.forEach(async (event) => {
-    const requestId = event.returnValues["requestId"];
-    const sellerId = event.returnValues["sellerId"];
-    const updatedAt = event.returnValues["updatedAt"];
+    const { requestId, sellerId, updatedAt } = event.returnValues;
     await RequestModel.updateOne(
       { requestId },
       {
@@ -248,8 +250,7 @@ const processOfferAccepted = async ({
     toBlock: latestBlockNumber,
   });
   events.forEach(async (event) => {
-    const offerId = event.returnValues["offerId"];
-    const isAccepted = event.returnValues["isAccepted"];
+    const { offerId, isAccepted } = event.returnValues;
     await OfferModel.updateOne(
       { offerId },
       {
