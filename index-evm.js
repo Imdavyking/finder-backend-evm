@@ -106,7 +106,7 @@ app.get("/accepted-requests/:sellerAddress", async (req, res) => {
     const { sellerAddress } = req.params;
 
     const acceptedRequests = await OfferModel.find({
-      sellerAddress: sellerAddress,
+      sellerAddress: { $regex: new RegExp(`^${sellerAddress}$`, "i") },
     });
 
     const requestIds = acceptedRequests.map((request) => request.requestId);
