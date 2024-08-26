@@ -1,10 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-/**
- * Request Schema
- */
-
 const Request = new Schema(
   {
     address: String,

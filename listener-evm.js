@@ -1,10 +1,9 @@
-const Web3 = require("web3");
-const fs = require("fs");
-const path = require("path");
 const mongoose = require("mongoose");
 const RequestModel = require("./models/Request.model");
 const LastBlockModel = require("./models/LastBlock.model");
 const OfferModel = require("./models/Offer.model");
+const UserCreatedModel = require("./models/UserCreated.model");
+const { web3, matchContract } = require("./evm_base");
 
 require("dotenv").config();
 
@@ -26,16 +25,6 @@ function connectWithRetry() {
 
 connectWithRetry();
 
-const finderABI = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "./finder.abi.json"), "utf8")
-);
-
-// get websocket from aurora api
-const web3 = new Web3(process.env.CONTRACT_RPC);
-const MatchEvents = new web3.eth.Contract(
-  finderABI,
-  process.env.CONTRACT_ADDRESS
-);
 const getMarketPlaceEvents = async () => {
   try {
     let latestBlockNumber = await web3.eth.getBlockNumber();
@@ -67,6 +56,7 @@ const getMarketPlaceEvents = async () => {
     await processOfferCreated(option);
     await processRequestAccepted(option);
     await processOfferAccepted(option);
+    await processUserCreated(option);
 
     lastScannedBlock = lastScannedBlockOffset;
 
@@ -90,7 +80,7 @@ const processRequestCreated = async ({
   latestBlockNumber,
   lastScannedBlock,
 }) => {
-  const events = await MatchEvents.getPastEvents("RequestCreated", {
+  const events = await matchContract.getPastEvents("RequestCreated", {
     fromBlock: lastScannedBlock + 1,
     toBlock: latestBlockNumber,
   });
@@ -152,7 +142,7 @@ const processRequestCreated = async ({
   });
 };
 const processOfferCreated = async ({ latestBlockNumber, lastScannedBlock }) => {
-  const events = await MatchEvents.getPastEvents("OfferCreated", {
+  const events = await matchContract.getPastEvents("OfferCreated", {
     fromBlock: lastScannedBlock + 1,
     toBlock: latestBlockNumber,
   });
@@ -231,7 +221,7 @@ const processRequestAccepted = async ({
   latestBlockNumber,
   lastScannedBlock,
 }) => {
-  const events = await MatchEvents.getPastEvents("RequestAccepted", {
+  const events = await matchContract.getPastEvents("RequestAccepted", {
     fromBlock: lastScannedBlock + 1,
     toBlock: latestBlockNumber,
   });
@@ -255,7 +245,7 @@ const processOfferAccepted = async ({
   latestBlockNumber,
   lastScannedBlock,
 }) => {
-  const events = await MatchEvents.getPastEvents("OfferAccepted", {
+  const events = await matchContract.getPastEvents("OfferAccepted", {
     fromBlock: lastScannedBlock + 1,
     toBlock: latestBlockNumber,
   });
@@ -265,6 +255,36 @@ const processOfferAccepted = async ({
       { offerId },
       {
         isAccepted,
+      },
+      {
+        upsert: true,
+      }
+    );
+  });
+};
+
+const processUserCreated = async ({ latestBlockNumber, lastScannedBlock }) => {
+  const events = await matchContract.getPastEvents("UserCreated", {
+    fromBlock: lastScannedBlock + 1,
+    toBlock: latestBlockNumber,
+  });
+  events.forEach(async (event) => {
+    const address = event.address;
+    const transactionHash = event.transactionHash;
+    const eventName = event.event;
+    const signature = event.signature;
+    const { userAddress, userId, username, accountType } = event.returnValues;
+    await UserCreatedModel.updateOne(
+      { transactionHash },
+      {
+        userAddress,
+        userId,
+        username,
+        accountType,
+        address,
+        transactionHash,
+        eventName,
+        signature,
       },
       {
         upsert: true,

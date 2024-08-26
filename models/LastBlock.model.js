@@ -1,10 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-/**
- * Business Schema
- */
-
 const LastBlock = new Schema(
   {
     blockNumber: Number,

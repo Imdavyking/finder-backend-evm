@@ -7,20 +7,31 @@ require("dotenv").config();
 const RequestModel = require("./models/Request.model");
 const OfferModel = require("./models/Offer.model");
 const { isWithinThreshold, threshold } = require("./location");
+const UserCreatedModel = require("./models/UserCreated.model");
+const { matchContract } = require("./evm_base");
 const app = express();
 const port = process.env.PORT || 5100;
 
 app.use(cors());
 app.use(bodyParser.json());
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+function connectWithRetry() {
+  mongoose
+    .connect(process.env.MONGO_URI)
+    .then(() => {
+      console.log("Connected to Database");
+    })
+    .catch((err) => {
+      console.error(
+        "Failed to connect to MongoDB, retrying in 5 seconds...",
+        err
+      );
+      setTimeout(connectWithRetry, 5000);
+    });
+  mongoose.set("debug", process.env.NODE_ENV != "production");
+}
 
-// fetch seller accepted requests
-
-mongoose.set("debug", process.env.NODE_ENV != "production");
+connectWithRetry();
 
 app.get("/requests/:buyerAddress", async (req, res) => {
   try {
@@ -95,6 +106,25 @@ app.post("/requests", async (req, res) => {
     }
 
     return res.json(availableRequests);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(error.message);
+  }
+});
+
+app.get("/user/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const userInfo = await UserCreatedModel.findOne({
+      userId: userId
+    });
+
+    const userData = await matchContract.methods
+      .users(userInfo.userAddress)
+      .call();
+
+    return res.json(userData);
   } catch (error) {
     console.error(error);
     res.status(500).send(error.message);
