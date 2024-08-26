@@ -203,6 +203,16 @@ const processOfferCreated = async ({ latestBlockNumber, lastScannedBlock }) => {
       }
     );
 
+    await RequestModel.updateOne(
+      { requestId },
+      {
+        sellerIds,
+      },
+      {
+        upsert: true,
+      }
+    );
+
     const currentRequest = await RequestModel.findOne({ requestId });
     if (currentRequest && currentRequest.lifecycle === 0) {
       await RequestModel.updateOne(
