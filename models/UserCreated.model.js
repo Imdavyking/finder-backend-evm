@@ -20,8 +20,8 @@ const UserCreated = new Schema(
     },
   },
   {
-    collection: "userCreated", // Specify the desired table name here
+    collection: "userDetails", // Specify the desired table name here
   }
 );
 
-module.exports = mongoose.model("userCreated", UserCreated);
+module.exports = mongoose.model("userDetails", UserCreated);
