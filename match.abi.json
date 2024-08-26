@@ -425,6 +425,11 @@
         "type": "string"
       },
       {
+        "internalType": "string",
+        "name": "_phone",
+        "type": "string"
+      },
+      {
         "internalType": "int256",
         "name": "_latitude",
         "type": "int256"
@@ -816,6 +821,11 @@
       {
         "internalType": "string",
         "name": "description",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "phone",
         "type": "string"
       },
       {
