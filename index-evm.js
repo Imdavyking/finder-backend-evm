@@ -117,14 +117,14 @@ app.get("/user/:userId", async (req, res) => {
     const { userId } = req.params;
 
     const userInfo = await UserCreatedModel.findOne({
-      userId: userId
+      userId: userId,
     });
 
     const userData = await matchContract.methods
       .users(userInfo.userAddress)
       .call();
 
-    return res.json(userData);
+    return res.json({ ...userData, userAddress: userInfo.userAddress });
   } catch (error) {
     console.error(error);
     res.status(500).send(error.message);
