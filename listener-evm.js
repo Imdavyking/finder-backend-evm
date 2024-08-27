@@ -57,6 +57,7 @@ const getMarketPlaceEvents = async () => {
     await processRequestAccepted(option);
     await processOfferAccepted(option);
     await processUserCreated(option);
+    await processUserUpdated(option);
 
     lastScannedBlock = lastScannedBlockOffset;
 
@@ -278,6 +279,35 @@ const processUserCreated = async ({ latestBlockNumber, lastScannedBlock }) => {
     const { userAddress, userId, username, accountType } = event.returnValues;
     await UserCreatedModel.updateOne(
       { transactionHash },
+      {
+        userAddress,
+        userId,
+        username,
+        accountType,
+        address,
+        transactionHash,
+        eventName,
+        signature,
+      },
+      {
+        upsert: true,
+      }
+    );
+  });
+};
+const  processUserUpdated = async ({ latestBlockNumber, lastScannedBlock }) => {
+  const events = await matchContract.getPastEvents("UserUpdated", {
+    fromBlock: lastScannedBlock + 1,
+    toBlock: latestBlockNumber,
+  });
+  events.forEach(async (event) => {
+    const address = event.address;
+    const transactionHash = event.transactionHash;
+    const eventName = event.event;
+    const signature = event.signature;
+    const { userAddress, userId, username, accountType } = event.returnValues;
+    await UserCreatedModel.updateOne(
+      { userId },
       {
         userAddress,
         userId,
