@@ -226,13 +226,15 @@ const processRequestAccepted = async ({
     toBlock: latestBlockNumber,
   });
   events.forEach(async (event) => {
-    const { requestId, sellerId, updatedAt } = event.returnValues;
+    const { requestId, sellerId, updatedAt, sellersPriceQuote } =
+      event.returnValues;
     await RequestModel.updateOne(
       { requestId },
       {
         lifecycle: 2,
         lockedSellerId: sellerId,
         updatedAt,
+        sellersPriceQuote,
       },
       {
         upsert: true,
